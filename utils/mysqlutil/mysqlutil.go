@@ -12,6 +12,7 @@ func Insert(db *sql.DB, sqlstr string, args ...interface{}) (int64, error) {
 	result, err := db.Exec(sqlstr, args...)
 	if err != nil {
 		fmt.Println("Fail to exec stmt:", err)
+		return 0, err
 	}
 
 	return result.LastInsertId()
@@ -22,6 +23,7 @@ func Exec(db *sql.DB, sqlstr string, args ...interface{}) (int64, error) {
 	result, err := db.Exec(sqlstr, args...)
 	if err != nil {
 		fmt.Println("Fail to exec stmt:", err)
+		return 0, err
 	}
 	return result.RowsAffected()
 }
@@ -31,12 +33,14 @@ func FetchRows(db *sql.DB, sqlstr string, args ...interface{}) ([]*map[string]st
 	rows, err := db.Query(sqlstr, args...)
 	if err != nil {
 		fmt.Println("Fail to query stmt:", err)
+		return nil, err
 	}
 	defer rows.Close()
 
 	columns, err := rows.Columns()
 	if err != nil {
 		fmt.Println("Fail to get columns of row:", err)
+		return nil, err
 	}
 
 	values := make([]sql.RawBytes, len(columns))
@@ -74,19 +78,19 @@ func (e *CityProvinceExistError) Error() string {
 	return "such city and province already exist!"
 }
 
-func InsertCityProvince(dbConn *sql.DB, city string, province string) (int64, int64, error){
-	var provinceId, cityId int64
-
+func InsertCityProvince(dbConn *sql.DB, city string, province string) (cityId int64, provinceId int64, err error){
 	// query the province
-	provinceRows, err := FetchRows(dbConn, "select * from province where name = ?", province)
+	provinceRows, err := FetchRows(dbConn, "select id from province where name = ?", province)
 	if err != nil {
-		fmt.Println("Error when during query:", err )
+		fmt.Println("Error when during query:", err)
+		return 0, 0, err
 	}
 	if len(provinceRows) == 0 {
 		// If province not exist, insert the province
 		provinceId, err = Insert(dbConn, "insert into province(name) values(?)", province)
 		if err != nil {
-			fmt.Println("Error when Insert province to mysql:", err )
+			fmt.Println("Error when Insert province to mysql:", err)
+			return 0, 0, err
 		}
 	} else {
 		// province already exist, get its id
@@ -94,9 +98,10 @@ func InsertCityProvince(dbConn *sql.DB, city string, province string) (int64, in
 	}
 
 	// query the city
-	cityRows, err := FetchRows(dbConn, "select * from city where name = ? and province_id = ?", city, provinceId)
+	cityRows, err := FetchRows(dbConn, "select id from city where name = ? and province_id = ?", city, provinceId)
 	if err != nil {
-		fmt.Println("Error when during query cities:", err )
+		fmt.Println("Error when during query cities:", err)
+		return 0, 0, err
 	}
 	if len(cityRows) > 0 {
 		// If the record already exist, report err
@@ -105,7 +110,8 @@ func InsertCityProvince(dbConn *sql.DB, city string, province string) (int64, in
 		// Insert the city
 		cityId, err = Insert(dbConn, "insert into city(name, province_id) values(?, ?)", city, provinceId)
 		if err != nil {
-			fmt.Println("Error when Insert city to mysql:", err )
+			fmt.Println("Error when Insert city to mysql:", err)
+			return 0, 0, err
 		}
 	}
 

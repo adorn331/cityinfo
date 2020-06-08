@@ -3,20 +3,17 @@
 package main
 
 import (
+	"cityinfo/configs"
+	pb "cityinfo/infoservice/infoservice"
 	"cityinfo/utils/mysqlutil"
 	"context"
 	"database/sql"
 	"fmt"
 	"github.com/gomodule/redigo/redis"
+	"google.golang.org/grpc"
 	"log"
 	"net"
 	"strconv"
-
-	//"strconv"
-
-	"cityinfo/configs"
-	pb "cityinfo/infoservice/infoservice"
-	"google.golang.org/grpc"
 )
 
 type server struct {
@@ -48,14 +45,13 @@ func (s *server) FetchCities(ctx context.Context, request *pb.FetchCitiesRequest
 		}
 	} else {
 		// Could not query from redis, then query from mysql.
-		rows, err := mysqlutil.FetchRows(s.db,"select * from city where province_id = ?", provinceId)
+		rows, err := mysqlutil.FetchRows(s.db,"select name from city where province_id = ?", provinceId)
 		if err != nil {
 			fmt.Println("Could not query from mysql:", err)
 			// todo handle err
 		}
 		for _, row := range rows {
 			cityName := (*row)["name"]
-			//cityId, _ := strconv.Atoi((*row)["id"])
 			cities = append(cities, &pb.City{Name: cityName})
 
 			// Sync to redis
@@ -120,18 +116,14 @@ func (s *server) DelCities(ctx context.Context, request *pb.DelCitiesRequest) (*
 	defer redisConn.Close()
 
 	for _, cid := range cityIds {
-		result := new(pb.OptionResult)
-
 		// Query the existence of city
-		rows, err := mysqlutil.FetchRows(s.db,"select * from city where id = ?", cid)
+		rows, err := mysqlutil.FetchRows(s.db,"select name, province_id from city where id = ?", cid)
 		if err != nil {
 			fmt.Println("Could not query from mysql:", err)
 		}
 		if len(rows) == 0 {
 			// This city do not exist.
-			result.Status = configs.CITY_NOT_EXIST
-			result.Msg = "city not exist!"
-			results = append(results, result)
+			results = append(results, &pb.OptionResult{Status: configs.CITY_NOT_EXIST, Msg: "city not exist!"})
 			continue
 		}
 		cityName := (*rows[0])["name"]
@@ -140,22 +132,18 @@ func (s *server) DelCities(ctx context.Context, request *pb.DelCitiesRequest) (*
 		// Del from mysql
 		_, err = mysqlutil.Exec(s.db, "delete from city where id = ?", cid)
 		if err != nil {
-			result.Status = configs.MYSQL_ERR
-			result.Msg = err.Error()
-			results = append(results, result)
+			results = append(results, &pb.OptionResult{Status:  configs.MYSQL_ERR, Msg: err.Error()})
 			continue
 		}
 
 		// Sync del to redis
-		_, err = redisConn.Do("zrem", provinceId, 0, cityName)
+		_, err = redisConn.Do("zrem", int32(provinceId), 0, cityName)
 		if err != nil {
-			result.Status = configs.REDIS_ERR
-			result.Msg = err.Error()
+			results = append(results, &pb.OptionResult{Status:  configs.REDIS_ERR, Msg: err.Error()})
+			continue
 		}
 
-		result.Status = 0
-		result.Msg = "ok"
-		results = append(results, result)
+		results = append(results,  &pb.OptionResult{Status:  0, Msg: "ok"})
 	}
 
 	return &pb.DelCitiesReply{Result: results}, nil
@@ -163,55 +151,43 @@ func (s *server) DelCities(ctx context.Context, request *pb.DelCitiesRequest) (*
 
 func (s *server) DelProvince(ctx context.Context, request *pb.DelProvinceRequest) (*pb.DelProvinceReply, error) {
 	pid := request.ProvinceId
-	result := new(pb.OptionResult)
 
 	redisConn := s.redisPool.Get()
 	defer redisConn.Close()
 
 	tx, err := s.db.Begin()
 	if err != nil {
-		result.Status = configs.MYSQL_ERR
-		result.Msg = err.Error()
-		return &pb.DelProvinceReply{Result: result}, err
+		return &pb.DelProvinceReply{Result: &pb.OptionResult{Status:  configs.MYSQL_ERR, Msg: err.Error()}}, err
 	}
 
 	// Del cities of province from mysql
 	_, err = mysqlutil.Exec(s.db, "delete from city where province_id = ?", pid)
 	if err != nil {
-		// todo use literal to compose result
-		result.Status = configs.MYSQL_ERR
-		result.Msg = err.Error()
 		tx.Rollback()
-		return &pb.DelProvinceReply{Result: result}, err
+		return &pb.DelProvinceReply{Result: &pb.OptionResult{Status:  configs.MYSQL_ERR, Msg: err.Error()}}, err
 	}
 
 	// Del province from mysql
 	rowsAffected, err := mysqlutil.Exec(s.db, "delete from province where id = ?", pid)
 	if err != nil {
-		result.Status = configs.MYSQL_ERR
-		result.Msg = err.Error()
 		tx.Rollback()
-		return &pb.DelProvinceReply{Result: result}, err
+		return &pb.DelProvinceReply{Result: &pb.OptionResult{Status:  configs.MYSQL_ERR, Msg: err.Error()}}, err
 	}
 	if rowsAffected == 0 {
-		result.Status = configs.PROVINCE_NOT_EXIST
-		result.Msg = "province not exist!"
 		tx.Rollback()
-		return &pb.DelProvinceReply{Result: result}, err
+		return &pb.DelProvinceReply{Result: &pb.OptionResult{Status:  configs.PROVINCE_NOT_EXIST, Msg: "province not exist!"}}, err
 	}
 
 	// Sync del zset in redis
 	_, err = redisConn.Do("zremrangebyrank", pid, 0, -1)
 	if err != nil {
-		result.Status = configs.REDIS_ERR
-		result.Msg = err.Error()
 		tx.Rollback()
+		return &pb.DelProvinceReply{Result: &pb.OptionResult{Status:  configs.REDIS_ERR, Msg: err.Error()}}, err
 	}
 
 	tx.Commit()
-	result.Status = 0
-	result.Msg = "ok"
-	return &pb.DelProvinceReply{Result: result}, err
+
+	return &pb.DelProvinceReply{Result: &pb.OptionResult{Status: 0, Msg: "ok"}}, err
 }
 
 func main() {
