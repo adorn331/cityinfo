@@ -28,7 +28,6 @@ func Exec(db *sql.DB, sqlstr string, args ...interface{}) (int64, error) {
 	return result.RowsAffected()
 }
 
-
 func FetchRows(db *sql.DB, sqlstr string, args ...interface{}) ([]*map[string]string, error) {
 	rows, err := db.Query(sqlstr, args...)
 	if err != nil {

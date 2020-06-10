@@ -1,8 +1,8 @@
-package main
+package service
 
 import (
 	"cityinfo/configs"
-	pb "cityinfo/infoservice/infoservice"
+	pb "cityinfo/cityservice/proto"
 	"cityinfo/utils/mysqlutil"
 	"context"
 
@@ -28,7 +28,7 @@ func TestServer_AddCities(t *testing.T) {
 		MaxIdle: configs.POOL_MAX_CONN,
 	}
 
-	s := NewCityManagerServer(db, poolMock)
+	s := NewCityServiceServer(db, poolMock)
 
 	type args struct {
 		ctx context.Context
@@ -38,7 +38,7 @@ func TestServer_AddCities(t *testing.T) {
 	// Prepare test case table
 	tests := []struct {
 		name    string
-		s       pb.CityManagerServer
+		s       pb.CityServiceServer
 		args    args
 		mock    func()
 		want    *pb.AddCitiesReply
@@ -129,17 +129,17 @@ func TestServer_AddCities(t *testing.T) {
 			tt.mock()
 			got, err := tt.s.AddCities(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("CityManagerServer.AddCities() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("CityServiceServer.AddCities() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if err == nil && !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("CityManagerServer.AddCities() = %v, want %v", got, tt.want)
+				t.Errorf("CityServiceServer.AddCities() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestServer_FetchCities(t *testing.T) {
+func TestServer_RetrieveCities(t *testing.T) {
 	ctx := context.Background()
 	db, dbMock, err := sqlmock.New()
 	if err != nil {
@@ -155,20 +155,20 @@ func TestServer_FetchCities(t *testing.T) {
 	}
 	defer poolMock.Close()
 
-	s := NewCityManagerServer(db, poolMock)
+	s := NewCityServiceServer(db, poolMock)
 
 	type args struct {
 		ctx context.Context
-		req *pb.FetchCitiesRequest
+		req *pb.RetrieveCitiesRequest
 	}
 
 	// Prepare test case table
 	tests := []struct {
 		name    string
-		s       pb.CityManagerServer
+		s       pb.CityServiceServer
 		args    args
 		mock    func()
-		want    *pb.FetchCitiesReply
+		want    *pb.RetrieveCitiesReply
 		wantErr bool
 	}{
 		{
@@ -176,7 +176,7 @@ func TestServer_FetchCities(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &pb.FetchCitiesRequest{
+				req: &pb.RetrieveCitiesRequest{
 					ProvinceId: int32(1),
 				},
 			},
@@ -185,7 +185,7 @@ func TestServer_FetchCities(t *testing.T) {
 				redisMock.Command("zrange", int32(1), "0", "-1").ExpectStringSlice("城市1", "城市2", "城市3")
 
 			},
-			want: &pb.FetchCitiesReply{
+			want: &pb.RetrieveCitiesReply{
 				Cities: []*pb.City{
 					{Name: "城市1"},
 					{Name: "城市2"},
@@ -198,7 +198,7 @@ func TestServer_FetchCities(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &pb.FetchCitiesRequest{
+				req: &pb.RetrieveCitiesRequest{
 					ProvinceId: int32(1),
 				},
 			},
@@ -219,7 +219,7 @@ func TestServer_FetchCities(t *testing.T) {
 				redisMock.Command("zadd", int32(1), 0, "城市2").Expect("OK")
 				redisMock.Command("zadd", int32(1), 0, "城市3").Expect("OK")
 			},
-			want: &pb.FetchCitiesReply{
+			want: &pb.RetrieveCitiesReply{
 				Cities: []*pb.City{
 					{Name: "城市1"},
 					{Name: "城市2"},
@@ -232,7 +232,7 @@ func TestServer_FetchCities(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &pb.FetchCitiesRequest{
+				req: &pb.RetrieveCitiesRequest{
 					ProvinceId: int32(666),
 				},
 			},
@@ -244,7 +244,7 @@ func TestServer_FetchCities(t *testing.T) {
 				dbMock.ExpectQuery("select .* from city").WithArgs(int32(666)).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "province_id"}))
 			},
-			want: &pb.FetchCitiesReply{
+			want: &pb.RetrieveCitiesReply{
 				Cities: nil,
 			},
 		},
@@ -254,13 +254,13 @@ func TestServer_FetchCities(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mock()
-			got, err := tt.s.FetchCities(tt.args.ctx, tt.args.req)
+			got, err := tt.s.RetrieveCities(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("CityManagerServer.FetchCities() error = %v, wantErr %v(testcase name: %v)", err, tt.wantErr, tt.name)
+				t.Errorf("CityServiceServer.RetrieveCities() error = %v, wantErr %v(testcase name: %v)", err, tt.wantErr, tt.name)
 				return
 			}
 			if err == nil && !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("CityManagerServer.FetchCities() = %v, want %v (testcase name: %v)", got, tt.want, tt.name)
+				t.Errorf("CityServiceServer.RetrieveCities() = %v, want %v (testcase name: %v)", got, tt.want, tt.name)
 			}
 		})
 	}
@@ -282,7 +282,7 @@ func TestServer_DelCities(t *testing.T) {
 	}
 	defer poolMock.Close()
 
-	s := NewCityManagerServer(db, poolMock)
+	s := NewCityServiceServer(db, poolMock)
 
 	type args struct {
 		ctx context.Context
@@ -292,7 +292,7 @@ func TestServer_DelCities(t *testing.T) {
 	// Prepare test case table
 	tests := []struct {
 		name    string
-		s       pb.CityManagerServer
+		s       pb.CityServiceServer
 		args    args
 		mock    func()
 		want    *pb.DelCitiesReply
@@ -370,11 +370,11 @@ func TestServer_DelCities(t *testing.T) {
 			tt.mock()
 			got, err := tt.s.DelCities(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("CityManagerServer.DelCities() error = %v, wantErr %v(testcase name: %v)", err, tt.wantErr, tt.name)
+				t.Errorf("CityServiceServer.DelCities() error = %v, wantErr %v(testcase name: %v)", err, tt.wantErr, tt.name)
 				return
 			}
 			if err == nil && !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("CityManagerServer.DelCities() = %v, want %v (testcase name: %v)", got, tt.want, tt.name)
+				t.Errorf("CityServiceServer.DelCities() = %v, want %v (testcase name: %v)", got, tt.want, tt.name)
 			}
 		})
 	}
@@ -396,7 +396,7 @@ func TestServer_DelProvince(t *testing.T) {
 	}
 	defer poolMock.Close()
 
-	s := NewCityManagerServer(db, poolMock)
+	s := NewCityServiceServer(db, poolMock)
 
 	type args struct {
 		ctx context.Context
@@ -406,7 +406,7 @@ func TestServer_DelProvince(t *testing.T) {
 	// Prepare test case table
 	tests := []struct {
 		name    string
-		s       pb.CityManagerServer
+		s       pb.CityServiceServer
 		args    args
 		mock    func()
 		want    *pb.DelProvinceReply
@@ -464,11 +464,11 @@ func TestServer_DelProvince(t *testing.T) {
 			tt.mock()
 			got, err := tt.s.DelProvince(tt.args.ctx, tt.args.req)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("CityManagerServer.DelProvince() error = %v, wantErr %v(testcase name: %v)", err, tt.wantErr, tt.name)
+				t.Errorf("CityServiceServer.DelProvince() error = %v, wantErr %v(testcase name: %v)", err, tt.wantErr, tt.name)
 				return
 			}
 			if err == nil && !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("CityManagerServer.DelProvince() = %v, want %v (testcase name: %v)", got, tt.want, tt.name)
+				t.Errorf("CityServiceServer.DelProvince() = %v, want %v (testcase name: %v)", got, tt.want, tt.name)
 			}
 		})
 	}

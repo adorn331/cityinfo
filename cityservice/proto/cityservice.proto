@@ -2,10 +2,10 @@
 
 syntax = "proto3";
 
-package infoservice;
+package proto;
 
-service CityManager {
-  rpc FetchCities (FetchCitiesRequest) returns (FetchCitiesReply) {}
+service CityService {
+  rpc RetrieveCities (RetrieveCitiesRequest) returns (RetrieveCitiesReply) {}
   rpc AddCities (AddCitiesRequest) returns (AddCitiesReply) {}
   rpc DelCities (DelCitiesRequest) returns (DelCitiesReply) {}
   rpc DelProvince (DelProvinceRequest) returns (DelProvinceReply) {}
@@ -31,11 +31,11 @@ message OptionResult {
 //  int32 provinceId = 4;
 }
 
-message FetchCitiesRequest {
+message RetrieveCitiesRequest {
   int32 provinceId = 1;
 }
 
-message FetchCitiesReply {
+message RetrieveCitiesReply {
   repeated City cities = 1;
 }
 
