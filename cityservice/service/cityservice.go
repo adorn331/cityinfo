@@ -3,13 +3,14 @@
 package service
 
 import (
-	"cityinfo/configs"
 	pb "cityinfo/cityservice/proto"
+	"cityinfo/configs"
+	"cityinfo/utils/logger"
 	"cityinfo/utils/mysqlutil"
 	"context"
 	"database/sql"
-	"fmt"
 	"github.com/gomodule/redigo/redis"
+	"go.uber.org/zap"
 	"strconv"
 )
 
@@ -44,8 +45,8 @@ func (s *server) RetrieveCities(ctx context.Context, request *pb.RetrieveCitiesR
 		// Could not query from redis, then query from mysql.
 		rows, err := mysqlutil.FetchRows(s.db,"select name from city where province_id = ?", provinceId)
 		if err != nil {
-			fmt.Println("Could not query from mysql:", err)
-			// todo handle err
+			logger.Log.Error("Could not query from mysql", zap.String("reason", err.Error()))
+			return nil, err
 		}
 		for _, row := range rows {
 			cityName := (*row)["name"]
@@ -54,8 +55,7 @@ func (s *server) RetrieveCities(ctx context.Context, request *pb.RetrieveCitiesR
 			// Sync to redis
 			_, err = redisConn.Do("zadd", provinceId, 0, cityName)
 			if err != nil {
-				fmt.Println("Error when store in Redis:", err )
-				// todo handle err
+				logger.Log.Error("Could not sync data to redis", zap.String("reason", err.Error()))
 			}
 		}
 	}
@@ -116,7 +116,7 @@ func (s *server) DelCities(ctx context.Context, request *pb.DelCitiesRequest) (*
 		// Query the existence of city
 		rows, err := mysqlutil.FetchRows(s.db,"select name, province_id from city where id = ?", cid)
 		if err != nil {
-			fmt.Println("Could not query from mysql:", err)
+			logger.Log.Error("Could not query from mysql", zap.String("reason", err.Error()))
 		}
 		if len(rows) == 0 {
 			// This city do not exist.
@@ -129,6 +129,7 @@ func (s *server) DelCities(ctx context.Context, request *pb.DelCitiesRequest) (*
 		// Del from mysql
 		_, err = mysqlutil.Exec(s.db, "delete from city where id = ?", cid)
 		if err != nil {
+			logger.Log.Error("Could not delete city from mysql", zap.String("reason", err.Error()))
 			results = append(results, &pb.OptionResult{Status:  configs.MYSQL_ERR, Msg: err.Error()})
 			continue
 		}
@@ -136,6 +137,7 @@ func (s *server) DelCities(ctx context.Context, request *pb.DelCitiesRequest) (*
 		// Sync del to redis
 		_, err = redisConn.Do("zrem", int32(provinceId), 0, cityName)
 		if err != nil {
+			logger.Log.Error("Could not sync to redis when deleting cities", zap.String("reason", err.Error()))
 			results = append(results, &pb.OptionResult{Status:  configs.REDIS_ERR, Msg: err.Error()})
 			continue
 		}
@@ -154,6 +156,7 @@ func (s *server) DelProvince(ctx context.Context, request *pb.DelProvinceRequest
 
 	tx, err := s.db.Begin()
 	if err != nil {
+		logger.Log.Error("Could not begin a tx in mysql", zap.String("reason", err.Error()))
 		return &pb.DelProvinceReply{Result: &pb.OptionResult{Status:  configs.MYSQL_ERR, Msg: err.Error()}}, err
 	}
 
@@ -161,6 +164,7 @@ func (s *server) DelProvince(ctx context.Context, request *pb.DelProvinceRequest
 	_, err = mysqlutil.Exec(s.db, "delete from city where province_id = ?", pid)
 	if err != nil {
 		tx.Rollback()
+		logger.Log.Error("Could not delete city from mysql", zap.String("reason", err.Error()))
 		return &pb.DelProvinceReply{Result: &pb.OptionResult{Status:  configs.MYSQL_ERR, Msg: err.Error()}}, err
 	}
 
@@ -168,6 +172,7 @@ func (s *server) DelProvince(ctx context.Context, request *pb.DelProvinceRequest
 	rowsAffected, err := mysqlutil.Exec(s.db, "delete from province where id = ?", pid)
 	if err != nil {
 		tx.Rollback()
+		logger.Log.Error("Could not delete province from mysql", zap.String("reason", err.Error()))
 		return &pb.DelProvinceReply{Result: &pb.OptionResult{Status:  configs.MYSQL_ERR, Msg: err.Error()}}, err
 	}
 	if rowsAffected == 0 {
@@ -179,6 +184,7 @@ func (s *server) DelProvince(ctx context.Context, request *pb.DelProvinceRequest
 	_, err = redisConn.Do("zremrangebyrank", pid, 0, -1)
 	if err != nil {
 		tx.Rollback()
+		logger.Log.Error("Could not delete zset from redis", zap.String("reason", err.Error()))
 		return &pb.DelProvinceReply{Result: &pb.OptionResult{Status:  configs.REDIS_ERR, Msg: err.Error()}}, err
 	}
 

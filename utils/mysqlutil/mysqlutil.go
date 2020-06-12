@@ -2,7 +2,6 @@ package mysqlutil
 
 import (
 	"database/sql"
-	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"strconv"
 )
@@ -11,7 +10,6 @@ import (
 func Insert(db *sql.DB, sqlstr string, args ...interface{}) (int64, error) {
 	result, err := db.Exec(sqlstr, args...)
 	if err != nil {
-		fmt.Println("Fail to exec stmt:", err)
 		return 0, err
 	}
 
@@ -22,7 +20,6 @@ func Insert(db *sql.DB, sqlstr string, args ...interface{}) (int64, error) {
 func Exec(db *sql.DB, sqlstr string, args ...interface{}) (int64, error) {
 	result, err := db.Exec(sqlstr, args...)
 	if err != nil {
-		fmt.Println("Fail to exec stmt:", err)
 		return 0, err
 	}
 	return result.RowsAffected()
@@ -31,14 +28,12 @@ func Exec(db *sql.DB, sqlstr string, args ...interface{}) (int64, error) {
 func FetchRows(db *sql.DB, sqlstr string, args ...interface{}) ([]*map[string]string, error) {
 	rows, err := db.Query(sqlstr, args...)
 	if err != nil {
-		fmt.Println("Fail to query stmt:", err)
 		return nil, err
 	}
 	defer rows.Close()
 
 	columns, err := rows.Columns()
 	if err != nil {
-		fmt.Println("Fail to get columns of row:", err)
 		return nil, err
 	}
 
@@ -53,7 +48,7 @@ func FetchRows(db *sql.DB, sqlstr string, args ...interface{}) ([]*map[string]st
 		rowMap := make(map[string]string)
 		err = rows.Scan(scanArgs...)
 		if err != nil {
-			fmt.Println("Fail to scan rows:", err)
+			return nil, err
 		}
 		var value string
 
@@ -81,14 +76,12 @@ func InsertCityProvince(dbConn *sql.DB, city string, province string) (cityId in
 	// query the province
 	provinceRows, err := FetchRows(dbConn, "select id from province where name = ?", province)
 	if err != nil {
-		fmt.Println("Error when during query:", err)
 		return 0, 0, err
 	}
 	if len(provinceRows) == 0 {
 		// If province not exist, insert the province
 		provinceId, err = Insert(dbConn, "insert into province(name) values(?)", province)
 		if err != nil {
-			fmt.Println("Error when Insert province to mysql:", err)
 			return 0, 0, err
 		}
 	} else {
@@ -99,7 +92,6 @@ func InsertCityProvince(dbConn *sql.DB, city string, province string) (cityId in
 	// query the city
 	cityRows, err := FetchRows(dbConn, "select id from city where name = ? and province_id = ?", city, provinceId)
 	if err != nil {
-		fmt.Println("Error when during query cities:", err)
 		return 0, 0, err
 	}
 	if len(cityRows) > 0 {
@@ -109,7 +101,6 @@ func InsertCityProvince(dbConn *sql.DB, city string, province string) (cityId in
 		// Insert the city
 		cityId, err = Insert(dbConn, "insert into city(name, province_id) values(?, ?)", city, provinceId)
 		if err != nil {
-			fmt.Println("Error when Insert city to mysql:", err)
 			return 0, 0, err
 		}
 	}
