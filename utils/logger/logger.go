@@ -2,7 +2,6 @@ package logger
 
 import (
 	"cityinfo/configs"
-	"cityinfo/utils/emailutil"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"log"
@@ -45,7 +44,7 @@ func init() {
 			log.Fatal(err)
 		}
 		localFileErrors := zapcore.Lock(file)
-		EmailErrors := zapcore.AddSync(emailutil.ErrNotifier)
+		//EmailErrors := zapcore.AddSync(emailutil.ErrNotifier)
 		consoleInfos := zapcore.Lock(os.Stdout)
 		consoleErrors := zapcore.Lock(os.Stderr)
 
@@ -66,7 +65,7 @@ func init() {
 			// for highPriority, need to log to console, file and send email notifier
 			zapcore.NewCore(JsonEncoder, consoleErrors, highPriority),
 			zapcore.NewCore(JsonEncoder, localFileErrors, highPriority),
-			zapcore.NewCore(JsonEncoder, EmailErrors, highPriority),
+			//zapcore.NewCore(JsonEncoder, EmailErrors, highPriority),
 
 			zapcore.NewCore(JsonEncoder, consoleInfos, lowPriority),
 		)

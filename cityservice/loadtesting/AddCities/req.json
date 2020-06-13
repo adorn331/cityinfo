@@ -1,0 +1,182 @@
+[
+  {
+    "cities": [{
+      "name": "城市1",
+      "province": {
+        "name": "省份1"
+      }
+    },{
+      "name": "城市2",
+      "province": {
+        "name": "省份1"
+      }
+    },{
+      "name": "城市3",
+      "province": {
+        "name": "省份1"
+      }
+    }]
+  },
+  {
+    "cities": [{
+      "name": "城市1",
+      "province": {
+        "name": "省份2"
+      }
+    },{
+      "name": "城市2",
+      "province": {
+        "name": "省份2"
+      }
+    },{
+      "name": "城市3",
+      "province": {
+        "name": "省份2"
+      }
+    }]
+  },
+  {
+    "cities": [{
+      "name": "城市1",
+      "province": {
+        "name": "省份3"
+      }
+    },{
+      "name": "城市2",
+      "province": {
+        "name": "省份3"
+      }
+    },{
+      "name": "城市3",
+      "province": {
+        "name": "省份3"
+      }
+    }]
+  },
+  {
+    "cities": [{
+      "name": "城市1",
+      "province": {
+        "name": "省份4"
+      }
+    },{
+      "name": "城市2",
+      "province": {
+        "name": "省份4"
+      }
+    },{
+      "name": "城市3",
+      "province": {
+        "name": "省份4"
+      }
+    }]
+  },
+  {
+    "cities": [{
+      "name": "城市1",
+      "province": {
+        "name": "省份5"
+      }
+    },{
+      "name": "城市2",
+      "province": {
+        "name": "省份5"
+      }
+    },{
+      "name": "城市3",
+      "province": {
+        "name": "省份5"
+      }
+    }]
+  },
+  {
+    "cities": [{
+      "name": "城市1",
+      "province": {
+        "name": "省份6"
+      }
+    },{
+      "name": "城市2",
+      "province": {
+        "name": "省份6"
+      }
+    },{
+      "name": "城市3",
+      "province": {
+        "name": "省份6"
+      }
+    }]
+  },
+  {
+    "cities": [{
+      "name": "城市1",
+      "province": {
+        "name": "省份7"
+      }
+    },{
+      "name": "城市2",
+      "province": {
+        "name": "省份7"
+      }
+    },{
+      "name": "城市3",
+      "province": {
+        "name": "省份7"
+      }
+    }]
+  },
+  {
+    "cities": [{
+      "name": "城市1",
+      "province": {
+        "name": "省份8"
+      }
+    },{
+      "name": "城市2",
+      "province": {
+        "name": "省份8"
+      }
+    },{
+      "name": "城市3",
+      "province": {
+        "name": "省份8"
+      }
+    }]
+  },
+  {
+    "cities": [{
+      "name": "城市1",
+      "province": {
+        "name": "省份9"
+      }
+    },{
+      "name": "城市2",
+      "province": {
+        "name": "省份9"
+      }
+    },{
+      "name": "城市3",
+      "province": {
+        "name": "省份9"
+      }
+    }]
+  },
+  {
+    "cities": [{
+      "name": "城市1",
+      "province": {
+        "name": "省份10"
+      }
+    },{
+      "name": "城市2",
+      "province": {
+        "name": "省份10"
+      }
+    },{
+      "name": "城市3",
+      "province": {
+        "name": "省份10"
+      }
+    }]
+  }
+]

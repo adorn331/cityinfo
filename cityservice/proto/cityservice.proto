@@ -44,7 +44,7 @@ message AddCitiesRequest {
 }
 
 message AddCitiesReply {
-  repeated OptionResult result = 1;
+  repeated OptionResult result = 1; // todo plural.
 }
 
 // batch delete city by city ids
@@ -54,7 +54,7 @@ message DelCitiesRequest {
 
 message DelCitiesReply {
   // todo add deleted field to indicate the amount of items deleted successfully
-  repeated OptionResult result = 1;
+  repeated OptionResult result = 1; // todo plural.
 }
 
 // batch delete city by province

@@ -3,8 +3,8 @@ package main
 import (
 	pb "cityinfo/cityservice/proto"
 	"cityinfo/cityservice/service"
-	"cityinfo/utils/logger"
 	"cityinfo/configs"
+	"cityinfo/utils/logger"
 	"database/sql"
 	"fmt"
 	"github.com/gomodule/redigo/redis"

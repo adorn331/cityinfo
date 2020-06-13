@@ -1,4 +1,4 @@
-//go:generate protoc -I ../infoservice --go_out=plugins=grpc:../infoservice ../infoservice/infoservice.proto
+//go:generate protoc -I ../proto --go_out=plugins=grpc:../proto ../proto/cityservice.proto
 
 package service
 
