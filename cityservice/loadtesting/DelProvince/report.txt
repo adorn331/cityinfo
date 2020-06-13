@@ -1,0 +1,38 @@
+
+Summary:
+  Count:	2000
+  Total:	849.44 ms
+  Slowest:	200.74 ms
+  Fastest:	0.94 ms
+  Average:	38.82 ms
+  Requests/sec:	2354.50
+
+Response time histogram:
+  0.944 [1]	|
+  20.924 [597]	|∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  40.904 [524]	|∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  60.883 [416]	|∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  80.863 [142]	|∎∎∎∎∎∎∎∎∎∎
+  100.843 [116]	|∎∎∎∎∎∎∎∎
+  120.823 [43]	|∎∎∎
+  140.803 [8]	|∎
+  160.782 [2]	|
+  180.762 [9]	|∎
+  200.742 [5]	|
+
+Latency distribution:
+  10 % in 10.09 ms 
+  25 % in 16.52 ms 
+  50 % in 34.52 ms 
+  75 % in 50.79 ms 
+  90 % in 80.37 ms 
+  95 % in 97.20 ms 
+  99 % in 132.05 ms 
+
+Status code distribution:
+  [OK]        1863 responses   
+  [Unknown]   137 responses    
+
+Error distribution:
+  [137]   rpc error: code = Unknown desc = Error 1040: Too many connections   
+
