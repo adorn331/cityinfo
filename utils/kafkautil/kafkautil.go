@@ -5,31 +5,6 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-//const (
-//	kafkaBroker = "localhost:9092"
-//	topic = "test4"
-//	//topic = "city-province"
-//)
-
-//var w *kafka.Writer
-//var r *kafka.Reader
-//
-//func init() {
-//	w = kafka.NewWriter(kafka.WriterConfig{
-//		Brokers: []string{kafkaBroker},
-//		Topic:   topic,
-//		Balancer: &kafka.LeastBytes{},
-//	})
-//
-//	r = kafka.NewReader(kafka.ReaderConfig{
-//		Brokers:   []string{kafkaBroker},
-//		Topic:     topic,
-//		Partition: 0,
-//		MinBytes:  10e3, // 10KB
-//		MaxBytes:  10e6, // 10MB
-//	})
-//}
-
 func ReadMsg(r *kafka.Reader, offset int64) (string, string, error){
 	r.SetOffset(offset)
 

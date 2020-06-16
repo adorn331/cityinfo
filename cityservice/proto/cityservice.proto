@@ -13,24 +13,25 @@ service CityService {
 
 message Province {
   int32 id = 1;
+
+  // Name of the province
   string name = 2;
 }
 
 message City {
   int32 id = 1;
   string name = 2;
+
+  // Province the city belongs to.
   Province province = 3;
 }
 
 message OptionResult {
   int32 status = 1;
   string msg = 2;
-
-  // todo : add this to field, and use literal when constructing optionResult
-//  int32 cityId = 3;
-//  int32 provinceId = 4;
 }
 
+// Get cities of specific province by provinceId
 message RetrieveCitiesRequest {
   int32 provinceId = 1;
 }
@@ -39,25 +40,25 @@ message RetrieveCitiesReply {
   repeated City cities = 1;
 }
 
+// Batch Add cities.
 message AddCitiesRequest {
   repeated City cities = 1;
 }
 
 message AddCitiesReply {
-  repeated OptionResult result = 1; // todo plural.
+  repeated OptionResult result = 1;
 }
 
-// batch delete city by city ids
+// Batch delete city by city ids
 message DelCitiesRequest {
   repeated int32 cityIds = 1;
 }
 
 message DelCitiesReply {
-  // todo add deleted field to indicate the amount of items deleted successfully
-  repeated OptionResult result = 1; // todo plural.
+  repeated OptionResult result = 1;
 }
 
-// batch delete city by province
+// Batch delete city by province id
 message DelProvinceRequest {
   int32 provinceId = 1;
 }

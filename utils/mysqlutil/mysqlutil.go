@@ -72,6 +72,7 @@ func (e *CityProvinceExistError) Error() string {
 	return "such city and province already exist!"
 }
 
+// fixme: might need to add mutex when high concurrency occur.
 func InsertCityProvince(dbConn *sql.DB, city string, province string) (cityId int64, provinceId int64, err error){
 	// query the province
 	provinceRows, err := FetchRows(dbConn, "select id from province where name = ?", province)

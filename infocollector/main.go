@@ -12,7 +12,6 @@ import (
 	"time"
 )
 
-
 func main() {
 	// Init kafka writer
 	kafkaW := kafka.NewWriter(kafka.WriterConfig{
@@ -100,38 +99,3 @@ func consumeData(r *kafka.Reader) {
 		offset++
 	}
 }
-
-//// Insert city - province to mysql and redis.
-//func syncToStorage(city string, province string, db *sql.DB, redisConn redis.Conn) error {
-//	// Insert to mysql
-//	var provinceId int64
-//	provinceRows, err := mysqlutil.FetchRows(db, "select * from province where name = ?", province)
-//	if err != nil {
-//		fmt.Println("Error when during query:", err )
-//	}
-//	if len(provinceRows) == 0 {
-//		// If province not exist, insert the province
-//		provinceId, err = mysqlutil.Insert(db, "insert into province(name) values(?)", province)
-//		if err != nil {
-//			fmt.Println("Error when Insert province to mysqlutil:", err )
-//		}
-//	} else {
-//		// If province already exist, get its id
-//		provinceId, _ = strconv.ParseInt((*provinceRows[0])["id"], 10, 64)
-//	}
-//
-//	// Insert the city
-//	_, err = mysqlutil.Insert(db, "insert into city(name, province_id) values(?, ?)", city, provinceId)
-//	if err != nil {
-//		fmt.Println("Error when Insert city to mysql:", err )
-//	}
-//
-//	// Insert to city and province to redis
-//	_, err = redisConn.Do("zadd", provinceId, 0, city)
-//	if err != nil {
-//		fmt.Println("Error when insert city to Redis:", err )
-//	}
-//
-//	return err
-//}
-

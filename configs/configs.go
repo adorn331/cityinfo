@@ -3,7 +3,7 @@ package configs
 const (
 	// Envirment param
 	KAFKA_BROKER = "localhost:9092"
-	KAFKA_TOPIC = "test6"
+	KAFKA_TOPIC = "cityinfo"
 
 	CITYINFO_URL = "http://www.hotelaah.com/dijishi.html"
 
