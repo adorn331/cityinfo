@@ -28,7 +28,7 @@ cityinfo
 * 运行 task2
     * `go run cityservice/cmd/main.go`
     
-* task2需要 kafka / redis / mysql 依赖, 相关配置在 configs/configs.go
+* 需要 kafka / redis / mysql 依赖, 相关配置在 configs/configs.go
     * mysql schema
     ```sql
   CREATE TABLE province(
