@@ -20,7 +20,6 @@ type server struct {
 	redisPool *redis.Pool
 }
 
-// NewToDoServiceServer creates
 func NewCityServiceServer(db *sql.DB, redisPool *redis.Pool) pb.CityServiceServer {
 	return &server{db: db, redisPool: redisPool}
 }
@@ -52,7 +51,7 @@ func (s *server) RetrieveCities(ctx context.Context, request *pb.RetrieveCitiesR
 			cityName := (*row)["name"]
 			cities = append(cities, &pb.City{Name: cityName})
 
-			// Sync to redis
+			// Cache to redis
 			_, err = redisConn.Do("zadd", provinceId, 0, cityName)
 			if err != nil {
 				logger.Log.Error("Could not sync data to redis", zap.String("reason", err.Error()))

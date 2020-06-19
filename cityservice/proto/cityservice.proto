@@ -1,13 +1,18 @@
-// todo add more comment
-
 syntax = "proto3";
 
 package proto;
 
 service CityService {
+  // Get cities of specific province by provinceId
   rpc RetrieveCities (RetrieveCitiesRequest) returns (RetrieveCitiesReply) {}
+
+  // Batch Add cities.
   rpc AddCities (AddCitiesRequest) returns (AddCitiesReply) {}
+
+  // Batch delete city by city ids
   rpc DelCities (DelCitiesRequest) returns (DelCitiesReply) {}
+
+  // Delete the province and cities belong to it.
   rpc DelProvince (DelProvinceRequest) returns (DelProvinceReply) {}
 }
 
@@ -58,7 +63,7 @@ message DelCitiesReply {
   repeated OptionResult result = 1;
 }
 
-// Batch delete city by province id
+// Delete the province and cities belong to it.
 message DelProvinceRequest {
   int32 provinceId = 1;
 }
