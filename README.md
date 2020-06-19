@@ -10,7 +10,7 @@ cityinfo
 ├── infocollector    task1：城市信息收集及存储
 ├── cityservice      task2：城市信息gRPC服务
 │   ├── cmd            运行svr
-│   ├── loadtesting    压力测试
+│   ├── loadtesting    压力测试脚本&结果
 │   ├── proto          pb文件
 │   └── service        gRPC svr
 ├── configs          相关配置
